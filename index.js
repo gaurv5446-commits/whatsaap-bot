@@ -1,38 +1,42 @@
-const express = require('express');
-const app = express();
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const pino = require('pino');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const GEMINI_KEY = process.env.GEMINI_KEY;
+async function startBot() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info');
 
-async function askGemini(q) {
-  try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + GEMINI_KEY, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: q }] }] })
+    const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true,        // Pehli baar QR scan karne ke liye
+        logger: pino({ level: 'silent' }),
+        browser: ['Ubuntu', 'Chrome', '20.0.0']
     });
-    const d = await r.json();
-    console.log(JSON.stringify(d));
-    if (d.candidates && d.candidates[0]) {
-      return d.candidates[0].content.parts[0].text;
-    }
-    return 'Error: ' + JSON.stringify(d);
-  } catch (e) {
-    return 'Error: ' + e.message;
-  }
+
+    sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) startBot();
+        } else if (connection === 'open') {
+            console.log('✅ Bot Connected!');
+        }
+    });
+
+    // Message Handler (Yahan magic hoga)
+    sock.ev.on('messages.upsert', async ({ messages }) => {
+        const m = messages[0];
+        if (!m.message) return;
+
+        const text = m.message.conversation || m.message.extendedTextMessage?.text || '';
+        const from = m.key.remoteJid;
+
+        if (text.startsWith('@')) {
+            await handleCommand(sock, from, text);
+        }
+    });
 }
 
-app.post('/webhook', async (req, res) => {
-  const msg = req.body.Body?.trim() || '';
-  let reply = '';
-  if (msg.toLowerCase() === '!ping') {
-    reply = 'Pong! ✅';
-  } else {
-    reply = await askGemini(msg);
-  }
-  res.set('Content-Type', 'text/xml');
-  res.send(`<Response><Message>${reply}</Message></Response>`);
-});
-
-app.listen(3000, () => console.log('Bot running on port 3000'));
+startBot();
