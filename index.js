@@ -23,7 +23,7 @@ app.post('/webhook', async (req, res) => {
   if (lower === '!ping') reply = 'Pong! ✅';
   else if (lower === '!help') reply = '!ping\n!gemini [sawaal]';
   else if (lower.startsWith('!gemini ')) reply = await askGemini(msg.slice(8));
-  else reply = '!help type karo';
+  else reply = await askGemini(msg);
 
   res.set('Content-Type', 'text/xml');
   res.send(`<Response><Message>${reply}</Message></Response>`);
