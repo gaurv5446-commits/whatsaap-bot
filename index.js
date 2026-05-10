@@ -29,4 +29,5 @@ app.post('/webhook', async (req, res) => {
   res.send(`<Response><Message>${reply}</Message></Response>`);
 });
 
-module.exports = app;
+app.listen(3000, () => console.log('Bot running on port 3000'));
+
