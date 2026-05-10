@@ -3,21 +3,23 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const GEMINI_KEY = process.env.GEMINI_KEY;
+const GROQ_KEY = process.env.GROQ_KEY;
 
-async function askGemini(q) {
+async function askGroq(q) {
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + GEMINI_KEY, {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: q }] }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + GROQ_KEY
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [{ role: 'user', content: q }]
+      })
     });
     const d = await r.json();
-    console.log(JSON.stringify(d));
-    if (d.candidates && d.candidates[0]) {
-      return d.candidates[0].content.parts[0].text;
-    }
-    return 'Error: ' + JSON.stringify(d);
+    return d.choices[0].message.content;
   } catch (e) {
     return 'Error: ' + e.message;
   }
@@ -29,7 +31,7 @@ app.post('/webhook', async (req, res) => {
   if (msg.toLowerCase() === '!ping') {
     reply = 'Pong! ✅';
   } else {
-    reply = await askGemini(msg);
+    reply = await askGroq(msg);
   }
   res.set('Content-Type', 'text/xml');
   res.send(`<Response><Message>${reply}</Message></Response>`);
