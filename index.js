@@ -3,20 +3,21 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const GEMINI_KEY = process.env.GEMINI_KEY; 
+const GEMINI_KEY = process.env.GEMINI_KEY;
 
 async function askGemini(q) {
   try {
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY, {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + GEMINI_KEY, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: q }] }] })
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: q }] }] })
     });
     const d = await r.json();
+    console.log(JSON.stringify(d));
     if (d.candidates && d.candidates[0]) {
       return d.candidates[0].content.parts[0].text;
     }
-    return 'Koi jawab nahi mila.';
+    return 'Error: ' + JSON.stringify(d);
   } catch (e) {
     return 'Error: ' + e.message;
   }
