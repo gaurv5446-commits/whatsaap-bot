@@ -3,7 +3,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const GEMINI_KEY = AIzaSyC2LcyiPTQ9Q81vIUprYeoYCsYs2Bs_4Tw
+const GEMINI_KEY = 'AIzaSyC2Lcy1PTQ9Q81vIUprYeoYCsYs2Bs_4Tw';
 
 async function askGemini(q) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
@@ -30,4 +30,3 @@ app.post('/webhook', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Bot running on port 3000'));
-
