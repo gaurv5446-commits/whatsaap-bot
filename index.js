@@ -3,7 +3,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const GEMINI_KEY = 'AIzaSyAmowBp4f419L3Bf0OJL27oy27eMdyoPts';
+const GEMINI_KEY = process.env.GEMINI_KEY; 
 
 async function askGemini(q) {
   try {
