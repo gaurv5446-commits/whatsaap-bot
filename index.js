@@ -3,7 +3,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const GEMINI_KEY = 'AIzaSyCJLToYkTVQUjJtMwPODit2B0sGlQVUy2I
+const GEMINI_KEY = AIzaSyC2LcyiPTQ9Q81vIUprYeoYCsYs2Bs_4Tw
 
 async function askGemini(q) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
