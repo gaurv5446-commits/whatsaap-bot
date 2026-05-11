@@ -1,37 +1,29 @@
 const express = require('express');
-require('dotenv').config(); // Load environment variables
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// Initialize Gemini API with key from environment variable
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-async function askGemini(q) {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(q);
-    const response = await result.response;
-    return response.text();
-  } catch (e) {
-    return 'Error: ' + e.message;
-  }
+async function askGroq(q) {
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    body: JSON.stringify({
+      model: 'llama3-8b-8192',
+      messages: [{ role: 'user', content: q }]
+    })
+  });
+  const d = await r.json();
+  return d.choices[0].message.content;
 }
 
 app.post('/webhook', async (req, res) => {
   const msg = req.body.Body?.trim() || '';
-  let reply = '';
-
-  if (msg.toLowerCase() === '!ping') {
-    reply = 'Pong! ✅';
-  } else {
-    reply = await askGemini(msg);
-  }
-
+  let reply = msg.toLowerCase() === '!ping' ? 'Pong! ✅' : await askGroq(msg);
   res.set('Content-Type', 'text/xml');
   res.send(`<Response><Message>${reply}</Message></Response>`);
 });
 
-app.listen(3000, () => console.log('Bot running on port 3000'));   
+app.listen(3000, () => console.log('Bot running on port 3000'));
