@@ -4,7 +4,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_KEY = 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
 
 async function askGroq(q) {
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
