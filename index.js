@@ -23,4 +23,5 @@ app.post('/webhook', async (req, res) => {
   const msg = req.body.Body?.trim() || '';
   let reply = msg.toLowerCase() === '!ping' ? 'Pong! ✅' : await askGroq(msg);
   res.set('Content-Type', 'text/xml');
-  re
+  re 
+Ise kaise run kare
