@@ -23,7 +23,4 @@ app.post('/webhook', async (req, res) => {
   const msg = req.body.Body?.trim() || '';
   let reply = msg.toLowerCase() === '!ping' ? 'Pong! ✅' : await askGroq(msg);
   res.set('Content-Type', 'text/xml');
-  res.send(`<Response><Message>${reply}</Message></Response>`);
-});
-
-app.listen(3000, () => console.log('Bot running on port 3000'));
+  re
